@@ -2,51 +2,170 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ลงทะเบียน — น้อง Powdy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>ลงทะเบียนกับ Powdy</title>
   <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
   <style>
+    :root {
+      --primary: #4A1E5D;
+      --primary-dark: #3a1649;
+      --primary-light: rgba(74,30,93,0.08);
+      --accent: #F27100;
+      --accent-dark: #d66200;
+      --white: #FFFFFF;
+      --bg: #F7F4F9;
+      --border: #DDD0E5;
+      --text: #2A1535;
+      --text-muted: #7A6085;
+      --error: #D32F2F;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-    .header { width: 100%; background: linear-gradient(135deg, #00b900, #00a000); color: white; padding: 24px 20px 20px; text-align: center; }
-    .header .avatar { width: 64px; height: 64px; border-radius: 50%; background: white; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-    .header h1 { font-size: 20px; font-weight: 700; }
-    .header p  { font-size: 13px; opacity: 0.9; margin-top: 4px; }
-    .user-badge { background: white; border-radius: 12px; margin: 16px 16px 0; padding: 12px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); width: calc(100% - 32px); }
-    .user-badge .dot { width: 36px; height: 36px; border-radius: 50%; background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    .user-badge .name { font-size: 14px; color: #333; font-weight: 600; }
-    .user-badge .sub  { font-size: 12px; color: #888; }
-    .card { background: white; border-radius: 16px; margin: 12px 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); width: calc(100% - 32px); }
-    .card h2 { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #f0f4f8; }
-    .field { margin-bottom: 16px; }
-    .field label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 6px; }
-    .field label span { color: #e53935; margin-left: 2px; }
-    .field input, .field select { width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; color: #333; background: #fafafa; appearance: none; -webkit-appearance: none; transition: border-color 0.2s; }
-    .field input:focus, .field select:focus { outline: none; border-color: #00b900; background: white; }
-    .field input.error, .field select.error { border-color: #e53935; }
-    .field .err-msg { font-size: 12px; color: #e53935; margin-top: 4px; display: none; }
+    body {
+      font-family: -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text);
+    }
+    #loading {
+      position: fixed; inset: 0; background: var(--white);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 14px; z-index: 99;
+    }
+    #loading.hide { display: none; }
+    .loading-spinner {
+      width: 38px; height: 38px;
+      border: 3px solid var(--primary-light);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    #loading p { font-size: 14px; color: var(--text-muted); }
+    .header {
+      width: 100%;
+      background: var(--primary);
+      color: var(--white);
+      padding: 28px 20px 22px;
+      text-align: center;
+    }
+    .avatar {
+      width: 84px; height: 84px; border-radius: 16px;
+      margin: 0 auto 14px; overflow: hidden;
+      border: 3px solid rgba(255,255,255,0.30);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.30);
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar-fallback { font-size: 36px; }
+    .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+    .header p  { font-size: 13px; opacity: 0.85; margin-top: 6px; line-height: 1.55; padding: 0 8px; }
+    .accent-bar {
+      width: 100%; height: 4px;
+      background: linear-gradient(90deg, var(--accent) 0%, #ffaa44 100%);
+    }
+    .user-badge {
+      background: var(--white); border-radius: 12px;
+      margin: 14px 16px 0; padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 1px 4px rgba(74,30,93,0.12);
+      width: calc(100% - 32px);
+      border-left: 4px solid var(--accent);
+    }
+    .user-badge .dot {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .user-badge .name { font-size: 14px; color: var(--primary); font-weight: 700; }
+    .user-badge .sub  { font-size: 12px; color: var(--text-muted); }
+    .card {
+      background: var(--white); border-radius: 16px;
+      margin: 12px 16px; padding: 20px;
+      box-shadow: 0 1px 6px rgba(74,30,93,0.10);
+      width: calc(100% - 32px);
+    }
+    .card h2 {
+      font-size: 15px; font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 18px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary-light);
+    }
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 13px;
+      color: var(--primary); font-weight: 600; margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .field label span { color: var(--error); margin-left: 2px; }
+    .field input, .field select {
+      width: 100%; padding: 13px 14px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 15px; color: var(--text); background: #FAFAFA;
+      appearance: none; -webkit-appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74,30,93,0.12);
+      background: var(--white);
+    }
+    .field input.error, .field select.error { border-color: var(--error); }
+    .field .err-msg { font-size: 12px; color: var(--error); margin-top: 4px; display: none; }
     .field.has-error .err-msg { display: block; }
+    .field-hint {
+      font-size: 12px; color: var(--text-muted);
+      margin-top: 6px; padding: 8px 10px;
+      background: var(--primary-light); border-radius: 8px;
+      line-height: 1.5; display: none;
+    }
     .select-wrap { position: relative; }
-    .select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #888; pointer-events: none; }
-    .role-hint { font-size: 12px; color: #888; margin-top: 6px; padding: 8px 12px; background: #f5f5f5; border-radius: 8px; display: none; }
-    .role-hint.show { display: block; }
-    .btn-submit { width: 100%; padding: 14px; background: #00b900; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: background 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .select-wrap::after {
+      content: "\25BE"; position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%); color: var(--primary); pointer-events: none;
+    }
+    .btn-submit {
+      width: 100%; padding: 15px;
+      background: var(--accent); color: var(--white);
+      border: none; border-radius: 12px; font-size: 16px;
+      font-weight: 700; cursor: pointer; margin-top: 4px;
+      transition: background 0.2s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
     .btn-submit:active { transform: scale(0.98); }
-    .btn-submit:disabled { background: #a5d6a7; cursor: not-allowed; }
-    .btn-submit .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    .btn-submit:disabled { background: #e0b88a; cursor: not-allowed; }
+    .btn-submit .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: none;
+    }
     .btn-submit.loading .spinner { display: block; }
     .btn-submit.loading .btn-text { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #success-screen { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; flex: 1; }
+    #success-screen {
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; padding: 48px 24px; text-align: center; flex: 1;
+    }
     #success-screen.show { display: flex; }
-    .success-icon { width: 80px; height: 80px; border-radius: 50%; background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px; }
-    #success-screen h2 { font-size: 22px; color: #1b5e20; margin-bottom: 10px; }
-    #success-screen p  { font-size: 15px; color: #555; line-height: 1.6; }
-    .btn-close { margin-top: 28px; padding: 14px 32px; background: #00b900; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
-    #loading { position: fixed; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 99; }
-    #loading.hide { display: none; }
-    .loading-spinner { width: 36px; height: 36px; border: 3px solid #e0e0e0; border-top-color: #00b900; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    #loading p { font-size: 14px; color: #888; }
+    .success-icon {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px; margin-bottom: 22px;
+    }
+    #success-screen h2 { font-size: 22px; color: var(--primary); font-weight: 700; margin-bottom: 10px; }
+    #success-screen p  { font-size: 15px; color: var(--text-muted); line-height: 1.65; }
+    .btn-close {
+      margin-top: 28px; padding: 14px 36px;
+      background: var(--accent); color: var(--white);
+      border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    .bottom-spacer { height: 24px; width: 100%; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -57,11 +176,17 @@
 </div>
 
 <div id="form-screen" style="width:100%; display:none; flex-direction:column; align-items:center;">
+
   <div class="header">
-    <div class="avatar">🤖</div>
-    <h1>น้อง Powdy</h1>
-    <p>ลงทะเบียนเพื่อใช้งานระบบตรวจสอบสินค้า</p>
+    <div class="avatar">
+      <img src="liff_admin_BG/Register.jpg" alt="Powdy"
+           onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\"avatar-fallback\">🤖</span>'"/>
+    </div>
+    <h1>ลงทะเบียนกับ Powdy</h1>
+    <p>กรุณากรอกข้อมูลตามจริง<br>เพื่อใช้งานระบบตรวจสอบสินค้ารับคืนกับ Powdy</p>
   </div>
+  <div class="accent-bar"></div>
+
   <div class="user-badge">
     <div class="dot">👤</div>
     <div>
@@ -69,42 +194,51 @@
       <div class="sub">บัญชี LINE ของคุณ</div>
     </div>
   </div>
+
   <div class="card">
-    <h2>📋 ข้อมูลพนักงาน</h2>
+    <h2>📋 ข้อมูลผู้ใช้งาน</h2>
+
     <div class="field" id="field-full-name">
       <label>ชื่อ-นามสกุล <span>*</span></label>
       <input type="text" id="full_name" placeholder="เช่น สมชาย ใจดี" />
       <div class="err-msg">กรุณากรอกชื่อ-นามสกุล</div>
     </div>
+
     <div class="field" id="field-employee-id">
       <label>รหัสพนักงาน <span>*</span></label>
-      <input type="text" id="employee_id" placeholder="เช่น EMP001" />
+      <div class="field-hint" style="display:block; margin-bottom:6px;">หากไม่มี ให้กรอก 99999999 (เลข 9 แปดตัว)</div>
+      <input type="text" id="employee_id" placeholder="เช่น EMP001 หรือ 99999999" />
       <div class="err-msg">กรุณากรอกรหัสพนักงาน</div>
     </div>
-    <div class="field" id="field-primary-branch">
-      <label>สาขาหลัก <span>*</span></label>
-      <input type="text" id="primary_branch" placeholder="เช่น สาขาลาดพร้าว" />
-      <div class="err-msg">กรุณากรอกสาขาหลัก</div>
-    </div>
+
     <div class="field" id="field-role">
-      <label>บทบาท <span>*</span></label>
+      <label>หน่วยงาน <span>*</span></label>
       <div class="select-wrap">
         <select id="role">
-          <option value="">-- เลือกบทบาท --</option>
+          <option value="">— เลือกหน่วยงาน —</option>
           <option value="fixed_branch">พนักงานสาขา</option>
-          <option value="driver">พนักงานขับรถ</option>
-          <option value="warehouse">คลัง</option>
-          <option value="supervisor">Supervisor</option>
+          <option value="driver">พนักงานขนส่ง</option>
+          <option value="warehouse">พนักงานคลังสินค้า</option>
         </select>
       </div>
-      <div class="err-msg">กรุณาเลือกบทบาท</div>
-      <div class="role-hint" id="role-hint"></div>
+      <div class="err-msg">กรุณาเลือกหน่วยงาน</div>
     </div>
+
+    <div class="field" id="field-primary-branch">
+      <label>สาขาหลัก <span>*</span></label>
+      <div class="field-hint" style="display:block; margin-bottom:6px;">ถ้าเป็นพนักงานขนส่ง ให้ใส่คำว่า ขนส่ง, พนักงานคลังสินค้า ให้ใส่คำว่า คลังสินค้า</div>
+      <input type="text" id="primary_branch" placeholder="เช่น สาขาลาดพร้าว" />
+      <div class="field-hint" id="branch-hint"></div>
+      <div class="err-msg">กรุณากรอกสาขาหลัก</div>
+    </div>
+
     <button class="btn-submit" id="btn-submit" onclick="submitForm()">
       <div class="spinner"></div>
       <span class="btn-text">✅ ลงทะเบียน</span>
     </button>
   </div>
+
+  <div class="bottom-spacer"></div>
 </div>
 
 <div id="success-screen">
@@ -117,7 +251,6 @@
 <script>
 const LIFF_ID = "2010147903-Kbr1m6do";
 const N8N_WEBHOOK_URL = "https://sotheeratach.app.n8n.cloud/webhook/powdy-register";
-
 let lineProfile = null;
 
 async function initLiff() {
@@ -129,30 +262,40 @@ async function initLiff() {
     document.getElementById("loading").classList.add("hide");
     document.getElementById("form-screen").style.display = "flex";
   } catch (err) {
-    document.getElementById("loading").innerHTML = '<p style="color:#e53935;padding:24px;text-align:center;">เกิดข้อผิดพลาด กรุณาปิดแล้วเปิดใหม่</p>';
+    document.getElementById("loading").innerHTML = '<p style="color:#D32F2F;padding:24px;text-align:center;">เกิดข้อผิดพลาด กรุณาปิดแล้วเปิดใหม่</p>';
   }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  document.getElementById("role").addEventListener("change", function() {
-    const hint = document.getElementById("role-hint");
-    if (this.value === "driver" || this.value === "supervisor") {
-      hint.textContent = "⚠️ บทบาทนี้จะถูกถามสาขาทุกครั้งที่ส่งรูป";
-      hint.classList.add("show");
-    } else { hint.classList.remove("show"); }
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("role").addEventListener("change", function () {
+    const branchInput = document.getElementById("primary_branch");
+    const hint = document.getElementById("branch-hint");
+    if (this.value === "driver") {
+      branchInput.value = "ขนส่ง";
+      hint.textContent = "💡 หน่วยงานขนส่ง — กำหนดสาขาเป็น \"ขนส่ง\" อัตโนมัติ (แก้ไขได้)";
+      hint.style.display = "block";
+    } else if (this.value === "warehouse") {
+      branchInput.value = "คลังสินค้า";
+      hint.textContent = "💡 หน่วยงานคลังสินค้า — กำหนดสาขาเป็น \"คลังสินค้า\" อัตโนมัติ (แก้ไขได้)";
+      hint.style.display = "block";
+    } else {
+      branchInput.value = "";
+      branchInput.placeholder = "เช่น สาขาลาดพร้าว";
+      hint.style.display = "none";
+    }
   });
 });
 
 function validate() {
   const fields = [
-    { id: "full_name", fieldId: "field-full-name" },
-    { id: "employee_id", fieldId: "field-employee-id" },
-    { id: "primary_branch", fieldId: "field-primary-branch" },
-    { id: "role", fieldId: "field-role" }
+    { id: "full_name",      fieldId: "field-full-name" },
+    { id: "employee_id",    fieldId: "field-employee-id" },
+    { id: "role",           fieldId: "field-role" },
+    { id: "primary_branch", fieldId: "field-primary-branch" }
   ];
   let valid = true;
-  fields.forEach(f => {
-    const el = document.getElementById(f.id);
+  fields.forEach(function (f) {
+    const el   = document.getElementById(f.id);
     const wrap = document.getElementById(f.fieldId);
     const empty = !el.value.trim();
     el.classList.toggle("error", empty);
@@ -167,19 +310,19 @@ async function submitForm() {
   const btn = document.getElementById("btn-submit");
   btn.disabled = true;
   btn.classList.add("loading");
-  const role = document.getElementById("role").value;
+  const role           = document.getElementById("role").value;
   const primary_branch = document.getElementById("primary_branch").value.trim();
   const payload = {
-    user_id: lineProfile.userId,
-    display_name: lineProfile.displayName,
-    full_name: document.getElementById("full_name").value.trim(),
-    employee_id: document.getElementById("employee_id").value.trim(),
-    primary_branch,
-    role,
-    requires_branch_prompt: role === "driver" || role === "supervisor",
-    last_used_branch: primary_branch,
-    registered_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    user_id:               lineProfile.userId,
+    display_name:          lineProfile.displayName,
+    full_name:             document.getElementById("full_name").value.trim(),
+    employee_id:           document.getElementById("employee_id").value.trim(),
+    primary_branch:        primary_branch,
+    role:                  role,
+    requires_branch_prompt: false,
+    last_used_branch:      primary_branch,
+    registered_at:         new Date().toISOString(),
+    updated_at:            new Date().toISOString()
   };
   try {
     const res = await fetch(N8N_WEBHOOK_URL, {
