@@ -335,20 +335,20 @@ async function submitForm() {
 
 function closeLiff() {
   try {
-    if (liff.isInClient()) {
-      liff.closeWindow();
-    } else {
-      // เปิดจาก browser ภายนอก — ปิด tab หรือแสดงข้อความ
-      window.close();
-      // ถ้า window.close() ไม่ได้ผล (browser block) ให้แสดงข้อความแทน
-      setTimeout(function() {
-        document.querySelector('.btn-close').textContent = 'ปิดหน้านี้ได้เลยครับ ✅';
-        document.querySelector('.btn-close').disabled = true;
-      }, 300);
+    // เรียก closeWindow เสมอ ไม่ว่าจะอยู่ใน LINE หรือ browser
+    liff.closeWindow();
+  } catch (e) {}
+
+  // fallback: ถ้า 800ms แล้วยังไม่ปิด → บอก user กด X แทน
+  setTimeout(function() {
+    var btn = document.querySelector('.btn-close');
+    if (btn && document.getElementById('success-screen').classList.contains('show')) {
+      btn.textContent = 'กดปุ่ม  ✕  ด้านบนขวาเพื่อปิด';
+      btn.disabled = true;
+      btn.style.background = 'var(--primary)';
+      btn.style.fontSize = '14px';
     }
-  } catch (e) {
-    window.close();
-  }
+  }, 800);
 }
 
 initLiff();
