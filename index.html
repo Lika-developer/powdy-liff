@@ -235,7 +235,7 @@
   <div class="success-icon">🎉</div>
   <h2>ลงทะเบียนสำเร็จ!</h2>
   <p>น้อง Powdy พร้อมช่วยท่านแล้วครับ<br/>กลับไปที่ LINE แล้วส่งรูปสินค้าได้เลย</p>
-  <button class="btn-close" onclick="liff.closeWindow()">กลับไป LINE</button>
+  <button class="btn-close" onclick="closeLiff()">กลับไป LINE</button>
 </div>
 
 <script>
@@ -327,6 +327,24 @@ async function submitForm() {
     alert("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
     btn.disabled = false;
     btn.classList.remove("loading");
+  }
+}
+
+function closeLiff() {
+  try {
+    if (liff.isInClient()) {
+      liff.closeWindow();
+    } else {
+      // เปิดจาก browser ภายนอก — ปิด tab หรือแสดงข้อความ
+      window.close();
+      // ถ้า window.close() ไม่ได้ผล (browser block) ให้แสดงข้อความแทน
+      setTimeout(function() {
+        document.querySelector('.btn-close').textContent = 'ปิดหน้านี้ได้เลยครับ ✅';
+        document.querySelector('.btn-close').disabled = true;
+      }, 300);
+    }
+  } catch (e) {
+    window.close();
   }
 }
 
