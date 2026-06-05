@@ -50,16 +50,6 @@
       padding: 28px 20px 22px;
       text-align: center;
     }
-    .avatar {
-      width: 84px; height: 84px; border-radius: 16px;
-      margin: 0 auto 14px; overflow: hidden;
-      border: 3px solid rgba(255,255,255,0.30);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.30);
-      background: rgba(255,255,255,0.15);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .avatar-fallback { font-size: 36px; }
     .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
     .header p  { font-size: 13px; opacity: 0.85; margin-top: 6px; line-height: 1.55; padding: 0 8px; }
     .accent-bar {
@@ -177,13 +167,13 @@
 
 <div id="form-screen" style="width:100%; display:none; flex-direction:column; align-items:center;">
 
-  <div class="header">
-    <div class="avatar">
-      <img src="liff_admin_BG/Register.jpg" alt="Powdy"
-           onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\"avatar-fallback\">🤖</span>'"/>
+  <div class="header" style="padding:0;">
+    <img src="liff_admin_BG/Register.jpg" alt="Powdy" style="width:100%; display:block;"
+         onerror="this.style.display='none'"/>
+    <div style="padding:20px 20px 18px;">
+      <h1>ลงทะเบียนกับ Powdy</h1>
+      <p>กรุณากรอกข้อมูลตามจริง<br>เพื่อใช้งานระบบตรวจสอบสินค้ารับคืนกับ Powdy</p>
     </div>
-    <h1>ลงทะเบียนกับ Powdy</h1>
-    <p>กรุณากรอกข้อมูลตามจริง<br>เพื่อใช้งานระบบตรวจสอบสินค้ารับคืนกับ Powdy</p>
   </div>
   <div class="accent-bar"></div>
 
@@ -344,4 +334,3 @@ initLiff();
 </script>
 </body>
 </html>
- 
